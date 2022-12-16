@@ -18,7 +18,7 @@ const criarUsuario = async (req, res) => {
   }
 
   if(req.body.cnpj) {
-    const cnpjExists = await UserSchema.exists({ email: req.body.cnpj })
+    const cnpjExists = await UserSchema.findOne({ cnpj: req.body.cnpj })
 
     if (cnpjExists) {
       return res.status(409).send({
@@ -27,7 +27,7 @@ const criarUsuario = async (req, res) => {
     }
   }
   else if(req.body.cpf) {
-    const cpfExists = await UserSchema.exists({ email: req.body.cpf })
+    const cpfExists = await UserSchema.findOne({ cpf: req.body.cpf })
 
     if (cpfExists) {
       return res.status(409).send({
