@@ -1,40 +1,43 @@
 const UserSchema = require('../models/userModel')
 const bcrypt = require("bcrypt");
 
-const getAll = async (req, res) => {
-    UserSchema.find(function (err, users) {
-      if (err) {
-        res.status(500).send({ message: err.message })
-      }
-      users = users.filter(u => u.tipo === "CLIENTE").map( u => {
-        delete u.password;
-        
-        return {
-          "id": u._id,
-          "name": u.name,
-          "email": u.email,
-          "createdAt": u.createdAt,
-        };
-      } );
-      res.status(200).send(users);
-    })
-  }
-
-async function createUser(req, res, tipo){
+const criarUsuario = async (req, res) => {
   const hashedPassword = bcrypt.hashSync(req.body.password, 10)
   req.body.password = hashedPassword
 
-  const emailExists = await UserSchema.exists({ email: req.body.email })
-
-  if (emailExists) {
-    return res.status(409).send({
-      message: 'Email já cadastrado',
+  if( !req.body.cnpj && !req.body.cpf ) {
+    return res.status(400).send({
+      message: "Você deve fornecer um cnpj ou cpf",
     })
   }
 
+  if( req.body.cnpj && req.body.cpf ) {
+    return res.status(400).send({
+      message: "Você deve ser uma pessoa física (cpf) ou jurídica (cnpj), mas não ambos",
+    })
+  }
+
+  if(req.body.cnpj) {
+    const cnpjExists = await UserSchema.exists({ email: req.body.cnpj })
+
+    if (cnpjExists) {
+      return res.status(409).send({
+        message: 'Cnpj já cadastrado',
+      })
+    }
+  }
+  else if(req.body.cpf) {
+    const cpfExists = await UserSchema.exists({ email: req.body.cpf })
+
+    if (cpfExists) {
+      return res.status(409).send({
+        message: 'CPF já cadastrado',
+      })
+    }
+  }
+  
   try {
-    const cliente = {...req.body, ...{"tipo": tipo} };
-    const newUser = new UserSchema(cliente)
+    const newUser = new UserSchema(req.body)
 
     const savedUser = await newUser.save()
 
@@ -44,22 +47,12 @@ async function createUser(req, res, tipo){
     })
   } catch (err) {
     console.error(err)
-    res.status(500).send({
+    res.status(400).send({
       message: err.message,
     })
   }
 }
 
-const createCliente = async (req, res) => {
-  return createUser(req, res, "CLIENTE");
-}
-
-const createGerente = async (req, res) => {
-  return createUser(req, res, "GERENTE");
-}
-
 module.exports = {
-  createCliente,
-  createGerente,
-  getAll
+  criarUsuario
 }

@@ -6,15 +6,15 @@ const app = express();
 
 const database = require('./database/mongooseConnect');
 const usuarioRoutes = require('./routes/usuarioRoutes');
-const mesaRoutes = require('./routes/mesaRoutes');
-const reservaRoutes = require('./routes/reservaRoutes');
+// const projetoRoutes = require('./routes/projetoRoutes');
+// const comentarioRoutes = require('./routes/comentarioRoutes');
 
 app.use(cors());
 app.use(express.json());
 
 app.use("/usuario", usuarioRoutes)
-app.use("/mesa", mesaRoutes)
-app.use("/reserva", reservaRoutes)
+// app.use("/projeto", projetoRoutes)
+// app.use("/comentario", comentarioRoutes)
 
 database.connect();
 

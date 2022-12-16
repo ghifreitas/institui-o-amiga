@@ -7,12 +7,31 @@ const SECRET = process.env.SECRET; // importei a secret para ser usada pelo JWT 
 const login = (req, res) => {
     try {
         
-        UserSchema.findOne({ email: req.body.email }, (error, user) => {
-            console.log("USUARIO EH ESSE AKI", user)
+        if( !req.body.cnpj && !req.body.cpf ) {
+            return res.status(400).send({
+                message: "Você deve fornecer um cnpj ou cpf",
+            })
+        }
+        
+        if( req.body.cnpj && req.body.cpf ) {
+            return res.status(400).send({
+                message: "Você deve ser uma pessoa física (cpf) ou jurídica (cnpj), mas não ambos",
+            })
+        }
+
+        let criterio = {};
+        if( req.body.cnpj) {
+            criterio[cnpj] = req.body.cnpj;
+        } else if( req.body.cpf) {
+            criterio[cpf] = req.body.cpf;
+        }
+
+        UserSchema.findOne(criterio, (error, user) => {
+            
             if(!user) {
                 return res.status(404).send({
-                    message: 'Usuário não encontrado',
-                    email: `${req.body.email}`
+                    ...criterio,
+                    message: 'Usuário não encontrado'
                 });
             }
             
@@ -28,7 +47,7 @@ const login = (req, res) => {
             }
             
             // jwt.sign(nome do usuário, SEGREDO)
-            const token = jwt.sign({nome: user.name, tipo: user.tipo, email: user.email}, SECRET);
+            const token = jwt.sign({nome: user.nome, id: user.id}, SECRET);
             
             res.status(200).send({
                 message: "Login efetuado com sucesso",
@@ -40,7 +59,7 @@ const login = (req, res) => {
     }
 };
 
-const getUserEmail = (req, res) => {
+const obterNomeUsuario = (req, res) => {
     
     const authHeader = req.get('authorization');
     if (!authHeader) {
@@ -61,7 +80,34 @@ const getUserEmail = (req, res) => {
     
     try {
         const mensagem = jwt.decode(token);
-        return mensagem.email;
+        return mensagem.nome;
+    } catch(err) {
+        console.error(err)
+    }
+}
+
+const obterIdUsuario = (req, res) => {
+    
+    const authHeader = req.get('authorization');
+    if (!authHeader) {
+        return res.status(401).send({
+            message: 'Você não possui autorização para realizar esta ação',
+            statusCode: 401
+        });
+    }
+    
+    const token = authHeader.split(' ')[1];
+    // console.log("tokenzinhooo", token)
+    
+    if (!token) {
+        return res.status(401).send({
+            message: "Token inválido"
+        })
+    }
+    
+    try {
+        const mensagem = jwt.decode(token);
+        return mensagem.id;
     } catch(err) {
         console.error(err)
     }
@@ -69,5 +115,6 @@ const getUserEmail = (req, res) => {
 
 module.exports = {
     login,
-    getUserEmail
+    obterIdUsuario,
+    obterNomeUsuario,
 };

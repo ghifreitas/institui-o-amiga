@@ -1,12 +1,12 @@
 const mongoose = require('mongoose');
 
-const MesaSchema = require("../models/mesaModel");
-const ReservaSchema = require("../models/reservaModel");
+const ProjetoSchema = require("../models/projetoModel");
+const ComentarioSchema = require("../models/comentarioModel");
 
 const criarMesa = async(req, res) => {
     const {numero, capacidade } = req.body;
     try{
-        const testeMesa = await MesaSchema.find({numero});
+        const testeMesa = await ProjetoSchema.find({numero});
         if(testeMesa && testeMesa.length) {
             return res.status(409).json({
                 mensagem: "Mesa já existente"
@@ -25,7 +25,7 @@ const criarMesa = async(req, res) => {
             });
         }
 
-        const mesa = new MesaSchema({
+        const mesa = new ProjetoSchema({
             numero,
             capacidade
         })
@@ -49,7 +49,7 @@ const listarMesas = async(req, response) => {
     //if (nome) query.nome = new RegExp(nome, 'i');
 
     try {
-        const mesas = await MesaSchema.find(query);
+        const mesas = await ProjetoSchema.find(query);
         response.status(200).json(mesas);
 
     } catch (error) {
@@ -59,11 +59,11 @@ const listarMesas = async(req, response) => {
     }
 }
 
-const buscarBibliotecasPorID = async(req, res) => {
+const buscarprojetoPorID = async(req, res) => {
     const { id } = req.params;
 
     try {
-        const bibliotecas = await MesaSchema.find(req.params)
+        const bibliotecas = await ProjetoSchema.find(req.params)
 
         const bibliotecaEncontrada = bibliotecas.find(bibliotecaAtual => {
             return bibliotecaAtual.id == id
@@ -81,12 +81,12 @@ const atualizarMesa = async(req, response) => {
     const { numero, capacidade } = req.params;
 
     try {
-        const mesa = MesaSchema.findOne({numero});
+        const mesa = ProjetoSchema.findOne({numero});
         if( !mesa ){
             return res.status(404).send({mensagem: "mesa inexistent"});    
         }
 
-        const reservas = await ReservaSchema.findOne({
+        const reservas = await ComentarioSchema.findOne({
             status: "ATIVA",
             numeroDaMesa: numero,
             horarioFim: {$gt: new Date()}
@@ -96,7 +96,7 @@ const atualizarMesa = async(req, response) => {
             return res.status(403).send({mensagem: "Esta mesa tem reservas associadas"});    
         }
         
-        const reserva = await MesaSchema.findByIdAndUpdate(id, body, {returnDocument:'after'});
+        const reserva = await ProjetoSchema.findByIdAndUpdate(id, body, {returnDocument:'after'});
         
         response.status(200).send(reserva)
     } catch (error) {
@@ -111,12 +111,12 @@ const removerMesa = async(req, res) => {
     const { numero } = req.params;
 
     try {
-        const mesa = await MesaSchema.findOne({numero});
+        const mesa = await ProjetoSchema.findOne({numero});
         if( !mesa  ){
             return res.status(404).send({mensagem: "mesa inexistente"});    
         }
 
-        const reservas = await ReservaSchema.findOne({
+        const reservas = await ComentarioSchema.findOne({
             status: "ATIVA",
             numeroDaMesa: numero,
             horarioFim: {$gt: new Date()}
@@ -126,7 +126,7 @@ const removerMesa = async(req, res) => {
             return res.status(403).send({mensagem: "Esta mesa tem reservas associadas"});    
         }
         
-        await MesaSchema.findOneAndDelete({numero});
+        await ProjetoSchema.findOneAndDelete({numero});
 
         return res.status(204).send();
     } catch (error) {

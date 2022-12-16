@@ -1,12 +1,12 @@
 const mongoose = require('mongoose');
-const {getUserEmail} = require('./authController'); 
+const {obterIdUsuario, obterNomeUsuario} = require('./authController'); 
 
-const ReservaSchema = require("../models/reservaModel");
-const MesaSchema = require("../models/mesaModel");
+const ComentarioSchema = require("../models/comentarioModel");
+const ProjetoSchema = require("../models/projetoModel");
 const UserSchema = require("../models/userModel");
 
 async function checarMesas(qtd) {
-    return (await MesaSchema.find({capacidade: {$gte: qtd}})).map(m => m.numero);
+    return (await ProjetoSchema.find({capacidade: {$gte: qtd}})).map(m => m.numero);
 }
 
 async function checarMesasRequest(req, res) {
@@ -49,12 +49,12 @@ async function checarMesaDisponivel(horarioInicio, horarioFim, quantidade) {
 }
 
 async function checarMesaDisponivelIntervalo(horarioInicio, horarioFim) {
-    const reservasCruzamInicio = await ReservaSchema.find({
+    const reservasCruzamInicio = await ComentarioSchema.find({
         horarioInicio: {$lte: horarioInicio},
         horarioFim: {$gt: horarioInicio},
     }); 
 
-    const reservasCruzamFim = await ReservaSchema.find({
+    const reservasCruzamFim = await ComentarioSchema.find({
         horarioInicio: {$lte: horarioFim},
         horarioFim: {$gt: horarioFim},
     }); 
@@ -115,7 +115,7 @@ async function criarReserva(dadosReserva, req, res){
 
         dadosReserva.numeroDaMesa = mesa;
 
-        const reserva = new ReservaSchema(dadosReserva)
+        const reserva = new ComentarioSchema(dadosReserva)
         const reservaSalva = await reserva.save();
         res.status(201).json({
             reserva: reservaSalva
@@ -151,7 +151,7 @@ const criarReservaGerente = async(req, res) => {
     return criarReserva(dadosReserva, req, res);
 }
 
-const listarReservas = async(req, response) => {
+const listarProjeto = async(req, response) => {
     //const {nome} = req.query;
 
     let query = { };
@@ -159,7 +159,7 @@ const listarReservas = async(req, response) => {
     //if (nome) query.nome = new RegExp(nome, 'i');
 
     try {
-        const reservas = await ReservaSchema.find(query);
+        const reservas = await ComentarioSchema.find(query);
         response.status(200).json(reservas);
 
     } catch (error) {
@@ -177,7 +177,7 @@ const listarReservasCliente = async(req, response) => {
             return;
         }
 
-        const reservas = await ReservaSchema.find(
+        const reservas = await ComentarioSchema.find(
             { 
                 status: 'ATIVA',
                 responsavel: email
@@ -192,7 +192,7 @@ const listarReservasCliente = async(req, response) => {
     }
 }
 
-const atualizarReserva = async(reserva, req, response) => {
+const atualizarProjeto = async(reserva, req, response) => {
     const { id } = req.params;
     try {
 
@@ -209,7 +209,7 @@ const atualizarReserva = async(reserva, req, response) => {
         }
 
         const numeroDaMesa = reserva.numeroDaMesa;
-        const mesa = await MesaSchema.findOne({numero: numeroDaMesa});
+        const mesa = await ProjetoSchema.findOne({numero: numeroDaMesa});
 
         if( !mesa ) {
             return response.status(404).json({
@@ -232,7 +232,7 @@ const atualizarReserva = async(reserva, req, response) => {
 
         reserva.update({quantidadeDePessoas: quantidadeDePessoas});
 
-        const biblioteca = await ReservaSchema.findByIdAndUpdate(id, {quantidadeDePessoas}, {returnDocument:'after'});
+        const biblioteca = await ComentarioSchema.findByIdAndUpdate(id, {quantidadeDePessoas}, {returnDocument:'after'});
         
         response.status(200).send(biblioteca)
     } catch (error) {
@@ -246,7 +246,7 @@ const atualizarReservaGerente = async(req, response) => {
     
     try {
         const { id } = req.params;
-        const reserva = await ReservaSchema.findById(id);    
+        const reserva = await ComentarioSchema.findById(id);    
         atualizarReserva(reserva, req, response);
     } catch (error) {
         res.status(500).json({
@@ -260,7 +260,7 @@ const atualizarReservaCliente = async(req, response) => {
     try {
         const { id } = req.params;
         const email = getUserEmail(req, response);
-        const reserva = await ReservaSchema.findOne({id, responsavel: email});    
+        const reserva = await ComentarioSchema.findOne({id, responsavel: email});    
         atualizarReserva(reserva, req, response);
     } catch (error) {
         response.status(500).json({
@@ -273,13 +273,13 @@ const cancelarReserva = async(req, res) => {
     const { id } = req.params;
 
     try {
-        const reserva = await ReservaSchema.findById(id);
+        const reserva = await ComentarioSchema.findById(id);
 
         if( !reserva) {
             return res.status(404).send("Reserva inexistente");    
         }
 
-        await ReservaSchema.findByIdAndUpdate(id, {$set: {status: 'CANCELADA'} } );
+        await ComentarioSchema.findByIdAndUpdate(id, {$set: {status: 'CANCELADA'} } );
 
 
         res.status(200).send({mensagem: "reserva cancelada"});
@@ -291,12 +291,12 @@ const cancelarReserva = async(req, res) => {
     }
 }
 
-const cancelarReservaCliente = async(req, res) => {
+const removerProjeto = async(req, res) => {
     const { id } = req.params;
 
     try {
         const email = getUserEmail(req, res);
-        const reserva = await ReservaSchema.findOne({id, responsavel: email});
+        const reserva = await ComentarioSchema.findOne({id, responsavel: email});
 
         if( !reserva) {
             return res.status(404).send("Reserva inexistente");    
