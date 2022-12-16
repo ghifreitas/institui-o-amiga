@@ -170,18 +170,19 @@ const listarReservas = async(req, response) => {
 }
 
 const listarReservasCliente = async(req, response) => {
-    //const {nome} = req.query;
 
-    const email = getUserEmail(req, res);
-    
     try {
+        const email = getUserEmail(req, response);
+        if( typeof(email) !== 'string' ){ // error
+            return;
+        }
+
         const reservas = await ReservaSchema.find(
             { 
-                $query: {
-                    status: 'ATIVA'
-                }, 
-                $orderby: { horarioInicio : 1 } }
-            );
+                status: 'ATIVA',
+                responsavel: email
+            } ).sort({ horarioInicio : 1 });
+        
         response.status(200).json(reservas);
 
     } catch (error) {
@@ -245,7 +246,7 @@ const atualizarReservaGerente = async(req, response) => {
     
     try {
         const { id } = req.params;
-        const reserva = ReservaSchema.findById(id);    
+        const reserva = await ReservaSchema.findById(id);    
         atualizarReserva(reserva, req, response);
     } catch (error) {
         res.status(500).json({
@@ -258,11 +259,11 @@ const atualizarReservaCliente = async(req, response) => {
     
     try {
         const { id } = req.params;
-        const email = getUserEmail(req, res);
-        const reserva = ReservaSchema.findOne({id, responsavel: email});    
+        const email = getUserEmail(req, response);
+        const reserva = await ReservaSchema.findOne({id, responsavel: email});    
         atualizarReserva(reserva, req, response);
     } catch (error) {
-        res.status(500).json({
+        response.status(500).json({
             message: error.message
         });
     }

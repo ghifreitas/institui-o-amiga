@@ -12,8 +12,8 @@ router.get("/listar", checkAuth, checaAcessoGerente, controller.listarReservas);
 router.get("/listar_reserva_cliente", checkAuth, checaAcessoCliente, controller.listarReservasCliente);
 router.patch("/atualizar/:id", checkAuth, checaAcessoGerente, controller.atualizarReservaGerente);
 router.patch("/atualizar_cliente/:id", checkAuth, checaAcessoCliente, controller.atualizarReservaCliente);
-router.delete("/cancelar/:id", checkAuth, controller.cancelarReserva);
-router.delete("/cancelar_cliente/:id", checkAuth, controller.cancelarReservaCliente);
+router.delete("/cancelar/:id", checkAuth, checaAcessoGerente, controller.cancelarReserva);
+router.delete("/cancelar_cliente/:id", checkAuth, checaAcessoCliente, controller.cancelarReservaCliente);
 
 
 

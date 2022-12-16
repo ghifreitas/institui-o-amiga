@@ -7,7 +7,7 @@ const authController = require("../controllers/authController");
 
 const { checkAuth, checaAcessoGerente } = require("../middlewares/auth");
 
-router.post("/criar_cliente/", checkAuth, userController.createCliente);
+router.post("/criar_cliente/", userController.createCliente);
 router.post("/criar_gerente/", checkAuth, checaAcessoGerente, userController.createGerente);
 router.get("/listar/", checkAuth, checaAcessoGerente, userController.getAll);
 router.post("/login/", authController.login);
