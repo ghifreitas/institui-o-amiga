@@ -21,9 +21,9 @@ const login = (req, res) => {
 
         let criterio = {};
         if( req.body.cnpj) {
-            criterio[cnpj] = req.body.cnpj;
+            criterio["cnpj"] = req.body.cnpj;
         } else if( req.body.cpf) {
-            criterio[cpf] = req.body.cpf;
+            criterio["cpf"] = req.body.cpf;
         }
 
         UserSchema.findOne(criterio, (error, user) => {
@@ -47,7 +47,7 @@ const login = (req, res) => {
             }
             
             // jwt.sign(nome do usuário, SEGREDO)
-            const token = jwt.sign({nome: user.nome, id: user.id}, SECRET);
+            const token = jwt.sign({nome: user.nome, id: user._id}, SECRET);
             
             res.status(200).send({
                 message: "Login efetuado com sucesso",

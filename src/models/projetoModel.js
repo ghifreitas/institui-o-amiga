@@ -5,11 +5,15 @@ const projetoSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    endereco: {
+    site: {
+        type: String,
+        required: false
+    },
+    finalidade: {
         type: String,
         required: true
     },
-    finalidade: {
+    descricao: {
         type: String,
         required: true
     },

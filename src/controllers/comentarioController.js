@@ -141,7 +141,6 @@ const removerMesa = async(req, res) => {
 module.exports = {
     criarMesa,
     listarMesas,
-    buscarBibliotecasPorID,
     atualizarMesa,
     removerMesa
 }

@@ -1,15 +1,16 @@
 const express = require('express');
 const router = express.Router();
 
-const controller = require('../controllers/mesaController');
+const controller = require('../controllers/projetoController');
 
-const { checkAuth, checaAcessoGerente } = require("../middlewares/auth");
+const { checkAuth} = require("../middlewares/auth");
 
 // gerente
-router.post("/criar", checkAuth, checaAcessoGerente, controller.criarMesa);
-router.get("/listar", checkAuth, checaAcessoGerente, controller.listarMesas);
-router.patch("/atualizar/:numero", checkAuth, checaAcessoGerente, controller.atualizarMesa);
-router.delete("/remover/:numero", checkAuth, checaAcessoGerente, controller.removerMesa);
+router.post("/criar", checkAuth, controller.criarProjeto);
+router.get("/listar", controller.listarProjetos);
+router.patch("/atualizar/:id", checkAuth, controller.atualizarProjeto);
+router.get("/ver/:id", checkAuth, controller.obterProjetoPorId);
+router.delete("/remover/:id", checkAuth, controller.removerProjeto);
 
 
 
