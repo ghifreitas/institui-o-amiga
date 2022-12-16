@@ -82,7 +82,7 @@ const atualizarProjeto = async(req, response) => {
     try {
         const { id } = req.params;
         const userId = obterIdUsuario(req, response);
-        const projeto = ProjetoSchema.findOne({id, responsavel: userId})
+        const projeto = await ProjetoSchema.findOne({_id: id, responsavel: userId})
         if( !projeto ) {
             response.status(404).json({
                 message: "Não encontramos um projeto seu com estas características"
@@ -126,16 +126,19 @@ const removerProjeto = async(req, res) => {
     try {
         const { id } = req.params;
         const userId = obterIdUsuario(req, res);
-        const projeto = await ProjetoSchema.findOne({id, responsavel: userId})
-        if( !projeto || !projeto.length ) {
-            res.status(404).json({
-                message: "Não encontramos um projeto seu com estas características"
+        const projeto = await ProjetoSchema.findOne({_id:id, responsavel: userId})
+        if( !projeto ) {
+            return res.status(404).json({
+                message: "Não encontramos um projeto seu com estas características",
+                responsavel: userId
             });
         }
 
-        await ProjetoSchema.findByIdAndDelete(id);
 
-        res.status(200).send({mensagem: "projeto removido"});
+        await ProjetoSchema.findByIdAndDelete(id);
+        //await ProjetoSchema.findById(id).remove();
+
+        res.status(200).send({mensagem: "projeto removido", projeto});
     } catch (error) {
         console.log(error)
         res.status(500).json({

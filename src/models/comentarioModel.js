@@ -8,6 +8,10 @@ const comentarioSchema = new mongoose.Schema({
     sugestao: {
         type: String,
         required: true
+    },
+    autor: {
+        type: String,
+        required: true
     }
 });
 

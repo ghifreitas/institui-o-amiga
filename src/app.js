@@ -7,14 +7,14 @@ const app = express();
 const database = require('./database/mongooseConnect');
 const usuarioRoutes = require('./routes/usuarioRoutes');
 const projetoRoutes = require('./routes/projetoRoutes');
-// const comentarioRoutes = require('./routes/comentarioRoutes');
+const comentarioRoutes = require('./routes/comentarioRoutes');
 
 app.use(cors());
 app.use(express.json());
 
 app.use("/usuario", usuarioRoutes)
 app.use("/projeto", projetoRoutes)
-// app.use("/comentario", comentarioRoutes)
+app.use("/comentario", comentarioRoutes)
 
 database.connect();
 
