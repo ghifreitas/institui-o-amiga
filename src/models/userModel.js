@@ -17,6 +17,11 @@ const userSchema = new mongoose.Schema({
     createdAt: {
         type: Date,
         default: new Date()
+    },
+    tipo: {
+        type: String,
+        enum : ['GERENTE','CLIENTE'],
+        default: 'CLIENTE'
     }
 });
 

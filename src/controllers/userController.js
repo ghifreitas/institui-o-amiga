@@ -6,11 +6,21 @@ const getAll = async (req, res) => {
       if (err) {
         res.status(500).send({ message: err.message })
       }
-      res.status(200).send(users)
+      users = users.filter(u => u.tipo === "CLIENTE").map( u => {
+        delete u.password;
+        
+        return {
+          "id": u._id,
+          "name": u.name,
+          "email": u.email,
+          "createdAt": u.createdAt,
+        };
+      } );
+      res.status(200).send(users);
     })
   }
 
-const createUser = async (req, res) => {
+async function createUser(req, res, tipo){
   const hashedPassword = bcrypt.hashSync(req.body.password, 10)
   req.body.password = hashedPassword
 
@@ -23,7 +33,8 @@ const createUser = async (req, res) => {
   }
 
   try {
-    const newUser = new UserSchema(req.body)
+    const cliente = {...req.body, ...{"tipo": tipo} };
+    const newUser = new UserSchema(cliente)
 
     const savedUser = await newUser.save()
 
@@ -39,7 +50,16 @@ const createUser = async (req, res) => {
   }
 }
 
+const createCliente = async (req, res) => {
+  return createUser(req, res, "CLIENTE");
+}
+
+const createGerente = async (req, res) => {
+  return createUser(req, res, "GERENTE");
+}
+
 module.exports = {
-  createUser,
+  createCliente,
+  createGerente,
   getAll
 }
