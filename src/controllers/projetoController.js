@@ -41,7 +41,7 @@ const criarProjeto = async(req, res) => {
 
     try{
         const dadosProjeto = req.body;
-        const responsavel = obterIdUsuario(req, res); // TODO: check e-mail
+        const responsavel = obterIdUsuario(req, res); 
         dadosProjeto["responsavel"] = responsavel;
 
         const projeto = new ProjetoSchema(dadosProjeto)
@@ -52,7 +52,7 @@ const criarProjeto = async(req, res) => {
 
     }catch(error){
         res.status(400).json({
-            message: error.message
+            message: error.message,
         })
     }
 

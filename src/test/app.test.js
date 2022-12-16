@@ -2,79 +2,32 @@ const app = require("../app");
 const bcrypt = require("bcrypt");
 const request = require("supertest");
 const userModel = require("../models/userModel");
-const reservaModel = require("../models/reservaModel");
+const projetoModel = require("../models/projetoModel");
 
 const jwt = require('jsonwebtoken'); // importei o jwt para gerar o token
 const SECRET = process.env.SECRET; // importei a secret para ser usada pelo JWT na geracao do token
 
-const email = "TESTE" + new Date().getTime();
 let token = null;
 
 const user = new userModel({
-    name: "TESTE",
-    email: email,
+    nome: "TESTE" + new Date().getTime(),
+    cpf: "11122233344",
     password: bcrypt.hashSync("TESTE", 10),
-    tipo: "CLIENTE"
 });
 
 console.log(user.email);
 
 describe("Produtos Controller", () => {
 
-    beforeAll(async()=>{
-
-        const usuario = await  userModel.findOne({email});
-
-        if( !usuario ) {
-            console.log("NENHUM USUÁRIO ENCONTRADO - NULL");
-            await user.save();
-            token = jwt.sign({nome: user.name, tipo: user.tipo, email: user.email}, SECRET);
-            console.log("TOKEN: " + token);
-        }
-    });
-
     // teste para checar se o sistema retorna 403 numa rota que o cliente não tem
     // autorização (só para gerentes)
-    test("GET /reserva/listar", (done) => {
+    test("GET /comentario/listar", (done) => {
         request(app)
-            .get("/reserva/listar")
-            .set('Authorization', 'Bearer ' + token)
-            .expect(403)
-            .expect((res) => {
-                expect(res.body.mensagem).toBe("VOCE NÃO TEM ACESSO A ESSAS INFORMAÇÕES");
-            })
-            .end((err) => {
-                if (err) return done(err);
-                return done();
-            });
-    });
-
-    test("POST /reserva/criar", (done) => {
-        request(app)
-            .post("/reserva/criar")
-            .set('Authorization', 'Bearer ' + token)
-            .send({
-                "horarioInicio": "2022-12-22T11:00:00Z",
-                "horarioFim": "2022-12-22T13:30:00Z",
-                "quantidadeDePessoas": 5
-            })
-            .expect(201)
-            .end(async (err) => {
-                await reservaModel.deleteMany({responsavel: email});
-
-                if (err) return done(err);
-                return done();
-            });
-    });
-
-    test("GET /reserva/listar_reserva_do_cliente", (done) => {
-        request(app)
-            .get("/reserva/listar_reserva_cliente")
+            .get("/comentario/listar")
             .set('Authorization', 'Bearer ' + token)
             .expect(200)
             .expect((res) => {
-                console.log("RESULT: ", res.body);
-                expect(res.body.length).toBe(0);
+                expect(res.body.length >= 0).toBe(true);
             })
             .end((err) => {
                 if (err) return done(err);
@@ -82,16 +35,37 @@ describe("Produtos Controller", () => {
             });
     });
 
-    test("POST /reserva/criar com intervalo errado", (done) => {
+    test("POST /projeto/criar", (done) => {
+        token = jwt.sign({nome: user.name, id: user._id}, SECRET);
+            
         request(app)
-            .post("/reserva/criar")
+            .post("/projeto/criar")
             .set('Authorization', 'Bearer ' + token)
             .send({
-                "horarioInicio": "2022-12-23T14:00:00Z",
-                "horarioFim": "2022-12-23T13:30:00Z",
-                "quantidadeDePessoas": 5
+                "nome": "Projeto Sangue bão",
+                "finalidade": "Aumentar a arrecadação de sangue",
+                "descricao": "Conscientização e ações práticas para aumentar a doação de sangue"
             })
-            .expect(400)
+            .expect(201)
+            .end(async (err, res) => {
+                console.log(res.body)
+                // await projetoModel.deleteMany({responsavel: user.id});
+
+                if (err) return done(err);
+                return done();
+            });
+    });
+
+    test("POST /projeto/criar sem estar logado", (done) => {
+
+        request(app)
+            .post("/projeto/criar")
+            .send({
+                "nome": "Projeto Sangue bão",
+                "finalidade": "Aumentar a arrecadação de sangue",
+                "descricao": "Conscientização e ações práticas para aumentar a doação de sangue"
+            })
+            .expect(401)
             .end(async (err) => {
 
                 if (err) return done(err);
